@@ -28,5 +28,5 @@ void mcu_sleep(uint32_t ms) {
 }
 
 void led_toggle(void) {
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_13);
 }
