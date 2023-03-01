@@ -36,7 +36,7 @@ endif
 ###############################################################################
 
 # Build Directory
-BUILD_DIR := build
+BUILD_DIR := build_cmake
 
 # Source Files
 CUBE_SOURCES := $(shell find $(CUBE_DIR) -name "*.c")
