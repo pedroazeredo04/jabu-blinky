@@ -33,11 +33,15 @@ include_directories(
     ${CMSIS_INCLUDE_DIRS}
 )
 
-file(GLOB_RECURSE CUBE_SOURCES "cube/Src/*.c")
 file(GLOB_RECURSE JABU_SOURCES "src/*.c")
-
 list(REMOVE_ITEM JABU_SOURCES "src/main.c")
-list(REMOVE_ITEM CUBE_SOURCES "cube/Src/system_stm32f4xx.c")
+
+set(CUBE_SOURCES
+    cube/Src/gpio.c
+    cube/Src/main.c
+    cube/Src/stm32f4xx_hal_msp.c
+    cube/Src/stm32f4xx_it.c
+)
 
 ## Declara o executável que queremos gerar com o arquivo main.c
 add_executable(jabu-blinky
@@ -50,7 +54,7 @@ add_executable(jabu-blinky
 ## Declara as dependências do executável jabu
 target_link_libraries(jabu-blinky
 
-    #HAL::STM32::F4
+    HAL::STM32::F4
 
     HAL::STM32::F4::GPIO
     HAL::STM32::F4::RCC
@@ -67,31 +71,42 @@ target_link_options(jabu-blinky PUBLIC
 )
 
 
-# ## Encontra todos os arquivos de teste e salva na variável TESTS_SOURCES
-# file(GLOB_RECURSE TESTS_SOURCES "tests/src/*.c")
+## Encontra todos os arquivos de teste e salva na variável TESTS_SOURCES
+file(GLOB_RECURSE TESTS_SOURCES "tests/src/*.c")
 
-# foreach(TEST_FILE ${TESTS_SOURCES})
-#     ## Declara a variável TEST_NAME como o nome do arquivo contido em TEST_FILE
-#     ## Se TEST_FILE contém /pasta1/pasta2/arquivo.c, TEST_NAME será 'arquivo'
-#     get_filename_component(TEST_NAME ${TEST_FILE} NAME)
+foreach(TEST_FILE ${TESTS_SOURCES})
+    ## Declara a variável TEST_NAME como o nome do arquivo contido em TEST_FILE
+    ## Se TEST_FILE contém /pasta1/pasta2/arquivo.c, TEST_NAME será 'arquivo'
+    get_filename_component(TEST_NAME ${TEST_FILE} NAME)
 
-#     ## Declara um executável de nome TEST_NAME com o arquivo TEST_FILE
-#     add_executable(${TEST_NAME}
-#         ${TEST_FILE}
-#     )
+    ## Declara um executável de nome TEST_NAME com o arquivo TEST_FILE
+    add_executable(${TEST_NAME}
+        ${TEST_FILE}
+        ${CUBE_SOURCES}
+        ${JABU_SOURCES}
+    )
 
-#     ## Adiciona a pasta include dos testes na lista de caminho a procurar arquivos
-#     target_include_directories(${TEST_NAME} PUBLIC
-#         ./tests/inc
-#     )
+    ## Adiciona a pasta include dos testes na lista de caminho a procurar arquivos
+    target_include_directories(${TEST_NAME} PUBLIC
+        ./tests/inc
+    )
 
-#     ## Declara as dependências do teste
-#     target_link_libraries(${TEST_NAME}
-#         jabu_lib
-#     )
-# endforeach()
+    ## Declara as dependências do teste
+    target_link_libraries(${TEST_NAME}
+        HAL::STM32::F4
+
+        HAL::STM32::F4::GPIO
+        HAL::STM32::F4::RCC
+        HAL::STM32::F4::CORTEX
+
+        CMSIS::STM32::F411RE
+
+        STM32::NoSys
+    )
+endforeach()
 
 
+# Registra o comando make flash
 add_custom_target(flash
     STM32_Programmer_CLI -c port=SWD -w ${PROJECT_NAME}.hex -v -rst
 )
