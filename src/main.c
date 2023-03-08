@@ -20,7 +20,7 @@ int main(void) {
     mcu_init();
 
     for (;;) {
-        led_toggle();
+        uart_transmit("Hello World! \n\r");
         mcu_sleep(LED_TOGGLE_DELAY_MS);
     }
 }
