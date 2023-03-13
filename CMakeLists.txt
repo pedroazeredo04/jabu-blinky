@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 
 ## Seleciona a caixa de ferramentas (toolchain) para STM32
 # Should be set before calling to project()
-set(CMAKE_TOOLCHAIN_FILE /home/pedrin_dj/stm32-cmake/cmake/stm32_gcc.cmake)
+set(CMAKE_TOOLCHAIN_FILE ./lib/stm32-cmake/cmake/stm32_gcc.cmake)
 set(CMAKE_C_STANDARD 11)
 set(STM32_CUBE_F4_PATH ./cube)
 
