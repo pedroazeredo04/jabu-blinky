@@ -21,6 +21,7 @@ int main(void) {
 
     for (;;) {
         uart_transmit("Hello World! \n\r");
+        led_toggle();
         mcu_sleep(LED_TOGGLE_DELAY_MS);
     }
 }

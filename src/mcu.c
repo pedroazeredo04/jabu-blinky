@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "mcu.h"
 
@@ -33,9 +34,12 @@ void mcu_sleep(uint32_t ms) {
 }
 
 void uart_transmit(char* data) {
-    HAL_UART_Transmit(&huart1, (uint8_t*) data, strlen(data), 10);
+    char uart_buf[100];
+    int uart_buf_len = sprintf(uart_buf, "Hello, wowrld!\r\n");
+
+    HAL_UART_Transmit(&huart1, (uint8_t*) uart_buf, uart_buf_len, 100);
 }
 
 void led_toggle(void) {
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_13);
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 }
