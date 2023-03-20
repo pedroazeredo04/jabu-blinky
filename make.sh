@@ -2,8 +2,8 @@
 
 set -ex
 
-mkdir -p build_cmake
-cd build_cmake
+mkdir -p build
+cd build
 
 cmake ..
 make
