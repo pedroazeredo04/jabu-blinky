@@ -2,15 +2,82 @@
 cmake_minimum_required(VERSION 3.16)
 
 ## Seleciona a caixa de ferramentas (toolchain) para STM32
-# Should be set before calling to project()
 set(CMAKE_TOOLCHAIN_FILE ./lib/stm32-cmake/cmake/stm32_gcc.cmake)
 set(CMAKE_C_STANDARD 11)
-set(STM32_CUBE_F4_PATH ./cube)
 
+## Define variáveis para a configuração do projeto
+set(STM32_CUBE_F4_PATH ./cube)
+set(CUBE_DIR ./cube)
+set(BUILD_DIR ./build)
+
+## Define variáveis para a configuração do STM32CubeMX
+if(DEFINED ENV{CUBE_PATH})
+    message(STATUS "CUBE_PATH defined as $ENV{CUBE_PATH}")
+    set(JAVA_EXE $ENV{CUBE_PATH}/jre/bin/java)
+    set(CUBE_JAR $ENV{CUBE_PATH}/STM32CubeMX)
+else()
+    message(FATAL_ERROR "CUBE_PATH not defined")
+endif()
+
+# Checa se o diretório cube está vazio ou não
+file(GLOB DRIVERS ${CUBE_DIR}/Src/*.c)
+list(LENGTH DRIVERS DRIVERS_LENGTH)
+if(DRIVERS_LENGTH EQUAL 0)
+    message(STATUS "Cube directory is empty. Generating cube files...")
+
+    file(WRITE ${BUILD_DIR}/makecube.txt
+        "config load ../${CUBE_DIR}/jabu-blinky.ioc\n"
+        "project generate\n"
+        "exit\n"
+    )
+
+    execute_process(COMMAND ${JAVA_EXE} -jar ${CUBE_JAR} -q makecube.txt)
+endif()
+
+# Registra o comando make flash
+add_custom_target(flash
+    COMMAND -E echo "Flashing..."
+    COMMAND STM32_Programmer_CLI -c port=SWD -w ${PROJECT_NAME}.hex -v -rst
+)
+
+# Registra o comando make clean_all
+add_custom_target(clean_all
+    COMMAND -E echo "Cleaning all build files..."
+    COMMAND rm -rf ../${BUILD_DIR}
+)
+
+# Registra o comando make cube
+add_custom_target(cube
+    file(WRITE ${BUILD_DIR}/makecube.txt
+        "config load ../${CUBE_DIR}/jabu-blinky.ioc\n"
+        "project generate\n"
+        "exit\n"
+    )
+
+    execute_process(COMMAND ${JAVA_EXE} -jar ${CUBE_JAR} -q makecube.txt)
+)
+
+# Registra o comando make clean_cube
+add_custom_target(clean_cube
+    COMMAND -E echo "Cleaning cube files..."
+    COMMAND mv ../${CUBE_DIR}/*.ioc .
+    COMMAND rm -rf ../${CUBE_DIR}/
+    COMMAND mkdir ../${CUBE_DIR}/
+    COMMAND mv *.ioc ../${CUBE_DIR}/
+)
+
+## Define o nome do projeto
 project(jabu-blinky C ASM)
 
-find_package(CMSIS COMPONENTS STM32F411RE REQUIRED)
+
+set(HAL_INCLUDE_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/stm32-cmake/cmake/
+)
+
+message("HAL_INCLUDE_DIRS: ${HAL_INCLUDE_DIRS}")
+
 find_package(HAL COMPONENTS STM32F4 REQUIRED)
+find_package(CMSIS COMPONENTS STM32F411RE REQUIRED)
 
 add_compile_options(
     -Wfatal-errors
@@ -34,14 +101,11 @@ include_directories(
 )
 
 file(GLOB_RECURSE JABU_SOURCES "src/*.c")
-list(REMOVE_ITEM JABU_SOURCES "src/main.c")
 
-set(CUBE_SOURCES
-    cube/Src/gpio.c
-    cube/Src/main.c
-    cube/Src/stm32f4xx_hal_msp.c
-    cube/Src/stm32f4xx_it.c
-)
+file(GLOB_RECURSE CUBE_SOURCES "cube/Src/*.c")
+list(REMOVE_ITEM CUBE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cube/Src/system_stm32f4xx.c)
+
+message("CUBE_SOURCES: ${CUBE_SOURCES}")
 
 ## Declara o executável que queremos gerar com o arquivo main.c
 add_executable(jabu-blinky
@@ -49,7 +113,6 @@ add_executable(jabu-blinky
     ${CUBE_SOURCES}
     ${JABU_SOURCES}
 )
-
 
 ## Declara as dependências do executável jabu
 target_link_libraries(jabu-blinky
@@ -105,11 +168,6 @@ foreach(TEST_FILE ${TESTS_SOURCES})
     )
 endforeach()
 
-
-# Registra o comando make flash
-add_custom_target(flash
-    STM32_Programmer_CLI -c port=SWD -w ${PROJECT_NAME}.hex -v -rst
-)
 
 stm32_print_size_of_target(jabu-blinky)
 
