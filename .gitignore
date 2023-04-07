@@ -2,6 +2,7 @@ cube/*
 !**/*.ioc
 
 build/
+build_cmake/
 -g
 .jlink-flash
 .cube
