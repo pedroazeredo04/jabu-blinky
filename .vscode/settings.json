@@ -21,4 +21,6 @@
         "files.trimTrailingWhitespace": false,
         "files.trimFinalNewlines": false,
     },
+
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
 }
