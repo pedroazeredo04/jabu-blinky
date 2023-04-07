@@ -1,0 +1,4 @@
+[submodule "lib/stm32-cmake"]
+	path = lib/stm32-cmake
+	url = git@github.com:ObKo/stm32-cmake.git
+	branch = develop
