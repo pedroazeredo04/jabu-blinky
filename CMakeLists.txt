@@ -12,6 +12,9 @@ cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/lib/stm32-cmake/cmake/stm32_gcc.cmake)
 set(CMAKE_C_STANDARD 11)
+# Cube generated FreeRTOS path
+set(FREERTOS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cube/Middlewares/Third_Party/FreeRTOS)
+set(FREERTOS_SOURCE ${FREERTOS_PATH}/Source)
 
 # Debug, Release, RelWithDebInfo and MinSizeRel
 # @see: https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html
@@ -28,6 +31,7 @@ set(DEVICE_FAMILY STM32F4xx)
 set(DEVICE_TYPE STM32F411xx)
 set(DEVICE_DEF STM32F411xE)
 set(DEVICE STM32F411RE)
+set(DEVICE_PROCESSOR ARM_CM4F)
 
 # DEVICE_FAMILY_COMPACT is the same as DEVICE_FAMILY but without the STM32 prefix
 string(REPLACE "STM32" "" DEVICE_FAMILY_COMPACT ${DEVICE})
@@ -47,8 +51,9 @@ include(cmake/config_validation.cmake)
 include(cmake/workspace.cmake)
 include(cmake/targets.cmake)
 
-find_package(CMSIS COMPONENTS ${DEVICE} REQUIRED)
+find_package(CMSIS COMPONENTS ${DEVICE} RTOS_V2 REQUIRED)
 find_package(HAL COMPONENTS STM32${DEVICE_CORTEX} REQUIRED)
+find_package(FreeRTOS COMPONENTS ${DEVICE_PROCESSOR} REQUIRED)
 
 add_compile_options(
     -Wall
@@ -80,13 +85,19 @@ set(DEPENDENCIES
     HAL::STM32::${DEVICE_CORTEX}::SPI
     HAL::STM32::${DEVICE_CORTEX}::TIMEx
     HAL::STM32::${DEVICE_CORTEX}::UART
+    HAL::STM32::${DEVICE_CORTEX}::USART
     HAL::STM32::${DEVICE_CORTEX}::WWDG
 
     HAL::STM32::${DEVICE_CORTEX}::RCCEx
     HAL::STM32::${DEVICE_CORTEX}::CORTEX
 
     CMSIS::STM32::${DEVICE_FAMILY_COMPACT}
+    CMSIS::STM32::${DEVICE_CORTEX}::RTOS_V2
     STM32::NoSys
+
+    FreeRTOS::${DEVICE_PROCESSOR}
+    FreeRTOS::Heap::4
+    FreeRTOS::Timers
 )
 
 set(LIB_SOURCES
@@ -108,6 +119,12 @@ set(TEST_INCLUDE_DIRECTORIES
     ./tests/inc
 )
 
+set(FREE_RTOS_INCLUDE_DIRECTORIES
+    ${FREERTOS_SOURCE}/include
+    ${FREERTOS_SOURCE}/CMSIS_RTOS_V2
+    ${FREERTOS_SOURCE}/portable/GCC/${DEVICE_PROCESSOR}
+)
+
 ###############################################################################
 ## Input files
 ###############################################################################
@@ -120,6 +137,19 @@ file(GLOB_RECURSE TESTS_HEADERS CONFIGURE_DEPENDS "tests/inc/*.h")
 file(GLOB_RECURSE TESTS_BIN CONFIGURE_DEPENDS "tests/bin/*.c")
 
 file(GLOB_RECURSE CUBE_SOURCES CONFIGURE_DEPENDS "cube/Src/*.c")
+
+# file(GLOB_RECURSE FREERTOS_SOURCES CONFIGURE_DEPENDS
+#     "${FREERTOS_SOURCE}/CMSIS_RTOS/*.c"
+#     "${FREERTOS_SOURCE}/MemMang/heap_1.c"
+#     "${FREERTOS_SOURCE}/portable/GCC/ARM_CM4F/port.c"
+#     "${FREERTOS_SOURCE}/croutine.c"
+#     "${FREERTOS_SOURCE}/event_groups.c"
+#     "${FREERTOS_SOURCE}/list.c"
+#     "${FREERTOS_SOURCE}/queue.c"
+#     "${FREERTOS_SOURCE}/stream_buffer.c"
+#     "${FREERTOS_SOURCE}/tasks.c"
+#     "${FREERTOS_SOURCE}/timers.c"
+# )
 
 # Remove system_xxx.c file from CubeMX, as it is already included in CMSIS
 string(TOLOWER ${DEVICE_FAMILY} DEVICE_FAMILY_LOWER)
@@ -139,6 +169,12 @@ add_executable(${PROJECT_NAME}
     ${CUBE_SOURCES}
     ${C_SOURCES}
     ${LIB_SOURCES}
+    ${FREERTOS_SOURCES}
+)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    USE_CMSIS_RTOS_V2
+    CMSIS_RTOS_V2_DEVICE_HEADER="stm32f4xx_hal.h"
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -146,6 +182,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${LIB_INCLUDE_DIRECTORIES}
     ${CMSIS_INCLUDE_DIRS}
     ${HAL_INCLUDE_DIRS}
+    ${FREE_RTOS_INCLUDE_DIRECTORIES}
 )
 
 target_precompile_headers(${PROJECT_NAME} PUBLIC
@@ -180,6 +217,7 @@ foreach(TEST_FILE ${TESTS_BIN})
     add_executable(${TEST_NAME} EXCLUDE_FROM_ALL
         ${TEST_FILE}
         ${CUBE_SOURCES}
+        ${FREERTOS_SOURCES}
         ${C_SOURCES}
         ${TESTS_SOURCES}
         ${LIB_SOURCES}
@@ -191,6 +229,7 @@ foreach(TEST_FILE ${TESTS_BIN})
         ${CMSIS_INCLUDE_DIRS}
         ${HAL_INCLUDE_DIRS}
         ${TEST_INCLUDE_DIRECTORIES}
+        ${FREE_RTOS_INCLUDE_DIRECTORIES}
     )
 
     target_precompile_headers(${TEST_NAME} PUBLIC
