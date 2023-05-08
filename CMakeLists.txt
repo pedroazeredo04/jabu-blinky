@@ -156,7 +156,6 @@ add_executable(${PROJECT_NAME}
     ${CUBE_SOURCES}
     ${C_SOURCES}
     ${LIB_SOURCES}
-    ${FREERTOS_SOURCES}
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
@@ -204,7 +203,6 @@ foreach(TEST_FILE ${TESTS_BIN})
     add_executable(${TEST_NAME} EXCLUDE_FROM_ALL
         ${TEST_FILE}
         ${CUBE_SOURCES}
-        ${FREERTOS_SOURCES}
         ${C_SOURCES}
         ${TESTS_SOURCES}
         ${LIB_SOURCES}
