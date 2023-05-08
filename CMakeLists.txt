@@ -31,7 +31,7 @@ set(DEVICE_FAMILY STM32F4xx)
 set(DEVICE_TYPE STM32F411xx)
 set(DEVICE_DEF STM32F411xE)
 set(DEVICE STM32F411RE)
-set(DEVICE_PROCESSOR ARM_CM4F)
+set(DEVICE_PORT ARM_CM4F)  # For FreeRTOS
 
 # DEVICE_FAMILY_COMPACT is the same as DEVICE_FAMILY but without the STM32 prefix
 string(REPLACE "STM32" "" DEVICE_FAMILY_COMPACT ${DEVICE})
@@ -53,7 +53,7 @@ include(cmake/targets.cmake)
 
 find_package(CMSIS COMPONENTS ${DEVICE} RTOS_V2 REQUIRED)
 find_package(HAL COMPONENTS STM32${DEVICE_CORTEX} REQUIRED)
-find_package(FreeRTOS COMPONENTS ${DEVICE_PROCESSOR} REQUIRED)
+find_package(FreeRTOS COMPONENTS ${DEVICE_PORT} REQUIRED)
 
 add_compile_options(
     -Wall
@@ -95,7 +95,7 @@ set(DEPENDENCIES
     CMSIS::STM32::${DEVICE_FAMILY_COMPACT}
     CMSIS::STM32::${DEVICE_CORTEX}::RTOS_V2
 
-    FreeRTOS::${DEVICE_PROCESSOR}
+    FreeRTOS::${DEVICE_PORT}
     FreeRTOS::Heap::4
     FreeRTOS::Timers
 )
@@ -122,7 +122,7 @@ set(TEST_INCLUDE_DIRECTORIES
 set(FREE_RTOS_INCLUDE_DIRECTORIES
     ${FREERTOS_SOURCE}/include
     ${FREERTOS_SOURCE}/CMSIS_RTOS_V2
-    ${FREERTOS_SOURCE}/portable/GCC/${DEVICE_PROCESSOR}
+    ${FREERTOS_SOURCE}/portable/GCC/${DEVICE_PORT}
 )
 
 ###############################################################################
