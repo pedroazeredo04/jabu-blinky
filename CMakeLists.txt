@@ -138,19 +138,6 @@ file(GLOB_RECURSE TESTS_BIN CONFIGURE_DEPENDS "tests/bin/*.c")
 
 file(GLOB_RECURSE CUBE_SOURCES CONFIGURE_DEPENDS "cube/Src/*.c")
 
-# file(GLOB_RECURSE FREERTOS_SOURCES CONFIGURE_DEPENDS
-#     "${FREERTOS_SOURCE}/CMSIS_RTOS/*.c"
-#     "${FREERTOS_SOURCE}/MemMang/heap_1.c"
-#     "${FREERTOS_SOURCE}/portable/GCC/ARM_CM4F/port.c"
-#     "${FREERTOS_SOURCE}/croutine.c"
-#     "${FREERTOS_SOURCE}/event_groups.c"
-#     "${FREERTOS_SOURCE}/list.c"
-#     "${FREERTOS_SOURCE}/queue.c"
-#     "${FREERTOS_SOURCE}/stream_buffer.c"
-#     "${FREERTOS_SOURCE}/tasks.c"
-#     "${FREERTOS_SOURCE}/timers.c"
-# )
-
 # Remove system_xxx.c file from CubeMX, as it is already included in CMSIS
 string(TOLOWER ${DEVICE_FAMILY} DEVICE_FAMILY_LOWER)
 list(REMOVE_ITEM CUBE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cube/Src/system_${DEVICE_FAMILY_LOWER}.c)
