@@ -60,6 +60,7 @@ add_compile_options(
     -Wextra
     -Wfatal-errors
     -mthumb
+    -ffreestanding
     -fdata-sections
     -ffunction-sections
     -fmessage-length=0
@@ -93,7 +94,6 @@ set(DEPENDENCIES
 
     CMSIS::STM32::${DEVICE_FAMILY_COMPACT}
     CMSIS::STM32::${DEVICE_CORTEX}::RTOS_V2
-    STM32::NoSys
 
     FreeRTOS::${DEVICE_PROCESSOR}
     FreeRTOS::Heap::4

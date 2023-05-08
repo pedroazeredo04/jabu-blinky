@@ -5,35 +5,56 @@
  */
 
 #include "mcu.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "main.h"
+#include "cmsis_os.h"
 
 /*****************************************
- * Private Constant Definitions
+ * Private Functions Definitions
  *****************************************/
 
-#define LED_TOGGLE_DELAY_MS 1500
+void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+
+void SystemClock_Config(void);
 
 /*****************************************
  * Main Function
  *****************************************/
 
 int main(void) {
-    mcu_init();
-    led_toggle();
-    led_toggle();
+    // Initialize HAL and GPIO
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
+
+    // Initialize FreeRTOS
+    osKernelInitialize();
     MX_FREERTOS_Init();
     osKernelStart();
 
-    for (;;);
+    // Empty infinity loop
+    for (;;)
+        ;
 }
 
-void StartDefaultTask(void *argument)
-{
-  /* USER CODE BEGIN StartDefaultTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-    osDelay(500);
-  }
-  /* USER CODE END StartDefaultTask */
+void StartDefaultTask(void* argument) {
+    for (;;) {
+        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+        osDelay(500);
+    }
+}
+
+void StartTask02(void* argument) {
+    for (;;) {
+        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_10);
+        osDelay(550);
+    }
+}
+
+void StartTask03(void* argument) {
+    for (;;) {
+        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_10);
+        osDelay(600);
+    }
 }
