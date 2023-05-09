@@ -8,6 +8,8 @@
 #define __MCU_H__
 
 #include <stdint.h>
+#include "tim.h"
+#include "adc.h"
 
 /*****************************************
  * Public Function Prototypes
@@ -30,6 +32,10 @@ void SystemClock_Config(void);
  * @param ms  Sleep time in milliseconds
  */
 void mcu_sleep(uint32_t ms);
+
+void led_pwm_init(void);
+
+uint16_t get_adc_value();
 
 /**
  * @brief Toggles LED.
