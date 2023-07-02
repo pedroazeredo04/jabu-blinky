@@ -5,37 +5,18 @@
  */
 
 #include "mcu.h"
-#include "FreeRTOS.h"
-#include "task.h"
 #include "main.h"
-#include "cmsis_os.h"
-
-/*****************************************
- * Private Functions Definitions
- *****************************************/
-
-void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
-
-void SystemClock_Config(void);
+#include "freertos_utility.h"
 
 /*****************************************
  * Main Function
  *****************************************/
 
 int main(void) {
-    // Initialize HAL and GPIO
-    HAL_Init();
-    SystemClock_Config();
-    MX_GPIO_Init();
+    mcu_init();              // Initialize HAL and GPIO
+    freertos_utility_init(); // Initialize FreeRTOS
 
-    // Initialize FreeRTOS
-    osKernelInitialize();
-    MX_FREERTOS_Init();
-    osKernelStart();
-
-    // Empty infinity loop
-    for (;;)
-        ;
+    for (;;);      // Empty infinity loop
 }
 
 void StartDefaultTask(void* argument) {
