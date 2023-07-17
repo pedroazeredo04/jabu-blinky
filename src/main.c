@@ -16,7 +16,8 @@ int main(void) {
     mcu_init();              // Initialize HAL and GPIO
     freertos_utility_init(); // Initialize FreeRTOS
 
-    for (;;);      // Empty infinity loop
+    for (;;)
+        ;          // Empty infinity loop
 }
 
 void StartDefaultTask(void* argument) {
