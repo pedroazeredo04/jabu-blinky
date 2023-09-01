@@ -25,15 +25,16 @@ void mcu_init(void);
 void SystemClock_Config(void);
 
 /**
- * @brief Put the MCU to sleep.
+ * @brief Reads I2C slave
  *
- * @param ms  Sleep time in milliseconds
+ * @param adress I2C perifherical adress
+ * @param reg Adress to register to be read
+ * @param timeout Time to wait
+ *
+ * @return 0, if failed or number pointed by red, if succeeded
  */
-void mcu_sleep(uint32_t ms);
+uint8_t readReg(uint8_t address, uint8_t reg, uint16_t timeout);
 
-/**
- * @brief Toggles LED.
- */
-void led_toggle(void);
+void checkMagnetPresence(void);
 
 #endif // __MCU_H__
